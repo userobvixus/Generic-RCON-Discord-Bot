@@ -63,7 +63,7 @@
 * 📂 **Applications**
 
 
-* 3. Sélectionnez l'Egg (Version) nommé : **Generic RCON Discord Bot**. (Si vous ne l'avait pas ouvrez un ticket sur le discord de CroustyCloud)
+* 3. Sélectionnez l'Egg (Version) nommé : **Generic RCON Discord Bot**. (Si vous ne l'avez pas, ouvrez un ticket sur le discord de CroustyCloud)
 
 
 * 4. Durant l'installation (ou dans l'onglet *Startup*), une case **Discord Bot Token** vous est demandée.
