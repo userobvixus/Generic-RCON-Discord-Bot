@@ -20,7 +20,7 @@
 * 5. Modifiez le nom d'utilisateur si besoin, puis cliquez sur **Reset Token** pour générer votre jeton secret.
 
 
-* ⚠️ **IMPORTANT :** Copiez ce **Token** et gardez-le précieusement (vous en aurez besoin à l'Étape 2). Ne le partagez jamais.
+* ⚠️ **IMPORTANT :** Copiez ce **Token** et gardez-le précieusement (vous en aurez besoin à l'Étape 3). Ne le partagez jamais.
 
 ### ⚠️ Réglage OBLIGATOIRE (Sinon le bot sera sourd)
 
