@@ -56,8 +56,9 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-client.once('ready', () => {
-    console.log(`✅ Bot RCON connecté : ${client.user.tag}`);
+// CORRECTION APPLIQUÉE ICI (ready -> clientReady)
+client.once('clientReady', (c) => {
+    console.log(`✅ Bot RCON connecté : ${c.user.tag}`);
     console.log(`📡 Gestion de ${Object.keys(CONFIG_SERVERS).length} serveurs.`);
 });
 
