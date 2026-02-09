@@ -1,0 +1,111 @@
+<div class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">
+            Nom du Serveur
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Le nom qui sera affiché sur le Dashboard et dans les messages Discord."></i>
+        </label>
+        <input type="text" name="nom" class="form-control" required placeholder="Ex: Rust Survival Main">
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">
+            Type de Jeu
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Définit le protocole utilisé pour scanner le serveur."></i>
+        </label>
+        <select name="gameType" class="form-select">
+            <optgroup label="Les Classiques">
+                <option value="rust">Rust</option>
+                <option value="minecraft">Minecraft</option>
+                <option value="arkse">ARK: Survival Evolved</option>
+                <option value="asa">ARK: Survival Ascended</option>
+            </optgroup>
+            <optgroup label="Survie & Gestion">
+                <option value="palworld">Palworld</option>
+                <option value="pz">Project Zomboid</option>
+                <option value="vrising">V Rising</option>
+                <option value="conan">Conan Exiles</option>
+                <option value="factorio">Factorio</option>
+                <option value="7d2d">7 Days to Die</option>
+                <option value="avorion">Avorion</option>
+            </optgroup>
+            <optgroup label="FPS / Source Engine">
+                <option value="cs2">Counter-Strike 2 / CS:GO</option>
+                <option value="gmod">Garry's Mod</option>
+                <option value="tf2">Team Fortress 2</option>
+                <option value="l4d2">Left 4 Dead 2</option>
+            </optgroup>
+            <optgroup label="Autre">
+                <option value="other">Autre (Generic Valve)</option>
+            </optgroup>
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            IP Serveur
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="L'adresse IPv4 de votre serveur (sans le port). Exemple: 77.93.141.50"></i>
+        </label>
+        <input type="text" name="ip" class="form-control font-monospace" required placeholder="0.0.0.0">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            Port RCON
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Le port TCP utilisé pour envoyer des commandes admin (Kick, Ban, Save)."></i>
+        </label>
+        <input type="number" name="port" class="form-control font-monospace" required placeholder="Ex: 28016">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            Port Query
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Le port utilisé pour voir si le serveur est en ligne (GameDig)."></i>
+        </label>
+        <input type="number" name="queryPort" class="form-control font-monospace" required placeholder="Ex: 28015">
+    </div>
+
+    <div class="col-md-12">
+        <label class="form-label">
+            Mot de passe RCON
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="Le mot de passe administrateur configuré dans les fichiers de votre serveur."></i>
+        </label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+
+    <hr class="border-secondary my-2">
+
+    <div class="col-md-4">
+        <label class="form-label">
+            ID Salon Commandes
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="L'ID du salon Discord où le bot écoutera les commandes (!kick, !save)."></i>
+        </label>
+        <input type="text" name="discordChannelId" class="form-control" required placeholder="Clic droit > Copier l'identifiant">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            ID Rôle Admin <small class="text-muted">(Optionnel)</small>
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="L'ID du rôle Discord autorisé à utiliser le bot. Si vide, tout le monde peut l'utiliser."></i>
+        </label>
+        <input type="text" name="adminRoleId" class="form-control" placeholder="Vide = Tout le monde">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">
+            ID Salon Status <small class="text-muted">(Optionnel)</small>
+            <i class="fas fa-info-circle text-secondary ms-1" data-bs-toggle="tooltip" data-bs-placement="top" 
+               title="L'ID du salon où le bot postera le panneau 'EN LIGNE / HORS LIGNE' auto-actualisé."></i>
+        </label>
+        <input type="text" name="statusChannelId" class="form-control">
+    </div>
+
+    <input type="hidden" name="logChannelId"> 
+</div>

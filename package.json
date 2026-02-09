@@ -1,0 +1,20 @@
+{
+  "name": "rcon-ultimate-bot",
+  "version": "11.0.0",
+  "description": "Bot Discord RCON + Web Dashboard + GameDig",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "discord.js": "^14.14.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "gamedig": "^5.0.0",
+    "rcon-client": "^4.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
