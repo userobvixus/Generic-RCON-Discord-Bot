@@ -1,4 +1,4 @@
-# 📚 Guide d'Installation : RCON Ultimate Bot (V11)
+# 📚 Guide d'Installation : Generic RCON Discord Bot
 
 Ce bot nouvelle génération vous permet d'administrer vos serveurs de jeux (Ark, Rust, Minecraft, Palworld, etc.) via Discord. Il inclut désormais un **Dashboard Web** pour une configuration facile et un **Scanner de Statut** en temps réel.
 
