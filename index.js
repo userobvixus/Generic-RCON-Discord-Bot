@@ -197,7 +197,7 @@ client.on('messageCreate', async (message) => {
             // Cas 1 : L'URL contient déjà le SteamID64 (lien /profiles/)
             const profileMatch = profileUrl.match(/\/profiles\/([0-9]{17})/);
             if (profileMatch) {
-                return message.reply(`✅ Le SteamID64 est : **${profileMatch[1]}**\nCommande : \`!grade ${profileMatch[1]} <Grade>\``);
+                return message.reply(`✅ Le SteamID64 est : **${profileMatch[1]}**`);
             }
 
             // Cas 2 : L'URL est un lien personnalisé (lien /id/)
@@ -216,7 +216,7 @@ client.on('messageCreate', async (message) => {
 
                 if (idMatch) {
                     await message.react('✅');
-                    message.reply(`✅ Le SteamID64 est : **${idMatch[1]}**\nCommande prête à copier : \`!grade ${idMatch[1]} VIP\``);
+                    message.reply(`✅ Le SteamID64 est : **${idMatch[1]}**`);
                 } else {
                     await message.react('❌');
                     message.reply("❌ Impossible de trouver le SteamID64. Vérifie que le lien est valide.");
