@@ -42,22 +42,21 @@ Cliquez sur **Save Changes** en bas de page.
 Maintenant que le bot existe sur Discord, installons-le sur votre hébergement Pterodactyl.
 
 1. Allez sur votre Panel Pterodactyl.
-2. 2. Créez un nouveau serveur en choisissant la catégorie :
+2. Créez un nouveau serveur en choisissant la catégorie :
+
 * 📂 **Bots pour Discord - Teamspeak - Twitch et serveurs de jeux**
+
 3. Sélectionnez l'Egg nommé : **Jeux Vidéo : Generic RCON Discord Bot**. (Si vous ne l'avez pas, ouvrez un ticket sur le discord de CroustyCloud)
 4. Durant l'installation (ou dans l'onglet **Startup**), vous devez remplir les variables suivantes :
+
 * 🔐 **Discord Bot Token :** Collez ici le **Token** que vous avez copié à l'Étape 1.
 * 🌐 **Git Repo URL :** Laissez la valeur par défaut.
 * 🔑 **Mot de Passe Web :** Définissez un mot de passe sécurisé.
 * *Ce mot de passe vous sera demandé pour accéder au Dashboard de configuration si vous vous connectez depuis une nouvelle adresse IP.*
 
-
-
-
 5. **Démarrez le serveur.**
+
 * *Note : Le premier démarrage peut prendre environ 1 minute le temps que le bot télécharge les fichiers et installe les modules nécessaires via GitHub.*
-
-
 
 ---
 
@@ -68,8 +67,8 @@ Fini les fichiers de configuration compliqués ! Tout se gère maintenant via un
 ### 1. Accéder au Dashboard
 
 1. Une fois le serveur démarré, regardez dans la console ou l'onglet **Network** pour trouver l'adresse de votre bot.
-* L'adresse ressemble à : `http://IP-DU-PANEL:PORT` (ex: `http://77.93.141.XX:25000`).
 
+* L'adresse ressemble à : `http://IP-DU-PANEL:PORT` (ex: `http://77.93.141.XX:25000`).
 
 2. Ouvrez ce lien dans votre navigateur internet.
 3. Une page de sécurité va s'afficher : **Entrez le "Mot de Passe Web"** que vous avez défini à l'étape précédente.
@@ -106,14 +105,22 @@ Dans le salon que vous avez configuré (ID Salon Commandes) :
 
 * **`!ping`** : Vérifie si le bot répond.
 * **`!save`** : Sauvegarde le monde (commande adaptée automatiquement selon le jeu : `saveworld` pour Ark/Rust, `save-all` pour Minecraft).
-* ** Commandes du Jeu (RCON Direct)** :
+* **`!steamid <LienProfilSteam>`** : Convertit l'URL d'un profil Steam en SteamID64 (identifiant à 17 chiffres). Idéal pour préparer des autorisations ou des bans.
+* *Exemple :* `!steamid https://steamcommunity.com/id/GabeN/`
+
+
+* **`!grade <SteamID64> <NomDuGrade>`** : *(Spécifique aux serveurs Ark: Survival Evolved & Ascended)*. Attribue rapidement un groupe de permission à un joueur directement depuis Discord, sans avoir besoin de se connecter au jeu.
+* *Exemple :* `!grade 76561198000000000 VIP`
+
+
+
+**🛠️ Commandes du Jeu (RCON Direct)** :
 Le bot agit comme une console à distance. Pour **toutes les autres commandes qui existent déjà sur votre jeu**, il suffit de les taper dans le salon Discord en ajoutant simplement un `!` devant.
+
 * *Exemple :* Pour kicker un joueur, tapez `!kick Pseudo`.
 * *Exemple :* Pour faire une annonce, tapez `!broadcast Bonjour à tous`.
 * *Exemple :* Pour changer l'heure, tapez `!time set day`.
 * **En bref :** `!` + `NomDeLaCommande`.
-
-
 
 ### 🔒 Sécurité
 
