@@ -186,7 +186,51 @@ client.on('messageCreate', async (message) => {
             }
         }
         // --- FIN DU SYSTÈME DE GRADE ---
+        // --- NOUVEAUTÉ : Récupération du SteamID64 ---
+        else if (action === 'steamid') {
+            if (args.length < 2) {
+                return message.reply("❌ Usage : `!steamid <LienProfilSteam>`\nExemple : `!steamid https://steamcommunity.com/id/GabeN/`");
+            }
 
+            const profileUrl = args[1];
+
+            // Cas 1 : L'URL contient déjà le SteamID64 (lien /profiles/)
+            const profileMatch = profileUrl.match(/\/profiles\/([0-9]{17})/);
+            if (profileMatch) {
+                return message.reply(`✅ Le SteamID64 est : **${profileMatch[1]}**\nCommande : \`!grade ${profileMatch[1]} <Grade>\``);
+            }
+
+            // Cas 2 : L'URL est un lien personnalisé (lien /id/)
+            try {
+                await message.react('⏳');
+                
+                // Nettoyage de l'URL et ajout du paramètre XML
+                const cleanUrl = profileUrl.endsWith('/') ? profileUrl : profileUrl + '/';
+                const response = await fetch(`${cleanUrl}?xml=1`);
+                const text = await response.text();
+                
+                // Recherche de la balise <steamID64> dans le code de la page
+                const idMatch = text.match(/<steamID64>([0-9]{17})<\/steamID64>/);
+                
+                try { await message.reactions.removeAll(); } catch(e){}
+
+                if (idMatch) {
+                    await message.react('✅');
+                    message.reply(`✅ Le SteamID64 est : **${idMatch[1]}**\nCommande prête à copier : \`!grade ${idMatch[1]} VIP\``);
+                } else {
+                    await message.react('❌');
+                    message.reply("❌ Impossible de trouver le SteamID64. Vérifie que le lien est valide.");
+                }
+            } catch (error) {
+                console.error("Erreur récupération SteamID:", error);
+                try { await message.reactions.removeAll(); await message.react('❌'); } catch(e){}
+                message.reply("❌ Erreur de communication avec les serveurs de Steam.");
+            }
+            
+            // On s'arrête ici pour ne pas envoyer cette commande au serveur de jeu via RCON
+            return;
+        }
+        // --- FIN DE LA RÉCUPÉRATION STEAMID ---
         // Alias existants
         else if (action === 'save') {
             const type = targetServer.gameType;
