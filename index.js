@@ -160,20 +160,42 @@ client.on('messageCreate', async (message) => {
     const targetServer = db.servers.find(s => s.discordChannelId === message.channel.id);
     
     if (targetServer) {
+        // Vérification des permissions avec le rôle défini depuis le Dashboard
         if (targetServer.adminRoleId && !message.member.roles.cache.has(targetServer.adminRoleId)) {
             return message.reply("⛔ Permission refusée.");
         }
 
         let command = message.content.substring(1).trim();
+        const args = command.split(/ +/);
+        const action = args[0].toLowerCase();
         
-        // Alias
-        if (command === 'save') {
+        // --- NOUVEAUTÉ : Système de Grade ---
+        if (action === 'grade') {
+            if (args.length < 3) {
+                return message.reply("❌ Usage incorrect. Exemple : `!grade 76561198000000000 VIP`");
+            }
+            const steamId = args[1];
+            const gradeName = args[2];
+
+            // Sécurité : on s'assure d'envoyer la syntaxe Ark uniquement aux serveurs Ark/ASA
+            if (['arkse', 'asa'].includes(targetServer.gameType)) {
+                // Syntaxe Vexel/Ark standard
+                command = `cheat setplayergroup ${steamId} ${gradeName}`;
+            } else {
+                return message.reply("❌ La commande de grade rapide est configurée uniquement pour les serveurs Ark.");
+            }
+        }
+        // --- FIN DU SYSTÈME DE GRADE ---
+
+        // Alias existants
+        else if (action === 'save') {
             const type = targetServer.gameType;
             if (['arkse', 'asa', 'rust', 'palworld', 'conan'].includes(type)) command = 'saveworld';
             if (['minecraft', 'pz', '7d2d'].includes(type)) command = 'save-all';
             if (['factorio'].includes(type)) command = '/save';
         }
 
+        // Exécution de la commande finale formatée
         executeRcon(targetServer, command, message);
     }
 });
