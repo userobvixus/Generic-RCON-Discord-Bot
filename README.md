@@ -43,19 +43,15 @@ Maintenant que le bot existe sur Discord, installons-le sur votre hébergement P
 
 1. Allez sur votre Panel Pterodactyl.
 2. Créez un nouveau serveur en choisissant la catégorie :
-
 * 📂 **Bots pour Discord - Teamspeak - Twitch et serveurs de jeux**
-
 3. Sélectionnez l'Egg nommé : **Jeux Vidéo : Generic RCON Discord Bot**. (Si vous ne l'avez pas, ouvrez un ticket sur le discord de CroustyCloud)
 4. Durant l'installation (ou dans l'onglet **Startup**), vous devez remplir les variables suivantes :
-
 * 🔐 **Discord Bot Token :** Collez ici le **Token** que vous avez copié à l'Étape 1.
 * 🌐 **Git Repo URL :** Laissez la valeur par défaut.
 * 🔑 **Mot de Passe Web :** Définissez un mot de passe sécurisé.
 * *Ce mot de passe vous sera demandé pour accéder au Dashboard de configuration si vous vous connectez depuis une nouvelle adresse IP.*
 
 5. **Démarrez le serveur.**
-
 * *Note : Le premier démarrage peut prendre environ 1 minute le temps que le bot télécharge les fichiers et installe les modules nécessaires via GitHub.*
 
 ---
@@ -67,7 +63,6 @@ Fini les fichiers de configuration compliqués ! Tout se gère maintenant via un
 ### 1. Accéder au Dashboard
 
 1. Une fois le serveur démarré, regardez dans la console ou l'onglet **Network** pour trouver l'adresse de votre bot.
-
 * L'adresse ressemble à : `http://IP-DU-PANEL:PORT` (ex: `http://77.93.141.XX:25000`).
 
 2. Ouvrez ce lien dans votre navigateur internet.
@@ -81,7 +76,7 @@ Sur le Dashboard, cliquez sur le bouton **"Ajouter un serveur"** et remplissez l
 * **Type de Jeu :** Sélectionnez votre jeu (Ark, Rust, Minecraft, Palworld, etc.) pour que le scanner fonctionne correctement.
 * **IP Serveur :** L'adresse IP de votre serveur de jeu (sans le port).
 * **Port RCON :** Le port utilisé pour les commandes admin (souvent différent du port de jeu !).
-* **Port Query :** Le port de connexion au jeu (utilisé pour voir si le serveur est en ligne).
+* **Port Query / Port de Jeu :** Le port utilisé pour vérifier si le serveur est en ligne. **Attention :** Pour Ark: Survival Ascended, mettez simplement le port de connexion au jeu (ex: 7777), le bot s'occupera de trouver les infos automatiquement. Pour les autres jeux, utilisez le port Query.
 * **Mot de passe RCON :** Le mot de passe admin de votre serveur de jeu.
 * **ID Salon Commandes :** L'identifiant du salon Discord où le bot écoutera les commandes (Activez le *Mode Développeur* sur Discord pour faire Clic-Droit > Copier l'identifiant).
 
@@ -92,6 +87,15 @@ Cliquez sur **Ajouter**. Le bot est instantanément mis à jour, pas besoin de r
 ## ✅ Étape 5 : Utilisation et Fonctionnalités
 
 Votre bot est maintenant prêt ! Voici ce qu'il peut faire :
+
+### 🔍 Détails Avancés sur le Dashboard
+
+Depuis l'interface Web, cliquez simplement sur le nom de votre serveur pour ouvrir une fenêtre détaillée. Pour les jeux supportés (comme Ark ASA), le bot récupère automatiquement les informations avancées en temps réel :
+
+* Liste des joueurs connectés
+* Mods actifs sur le serveur
+* Paramètres du serveur (Crossplay, PVE, Officiel/Non-Officiel)
+* Lien direct vers l'historique graphique de votre serveur
 
 ### 📊 Statut en Temps Réel
 
@@ -106,13 +110,9 @@ Dans le salon que vous avez configuré (ID Salon Commandes) :
 * **`!ping`** : Vérifie si le bot répond.
 * **`!save`** : Sauvegarde le monde (commande adaptée automatiquement selon le jeu : `saveworld` pour Ark/Rust, `save-all` pour Minecraft).
 * **`!steamid <LienProfilSteam>`** : Convertit l'URL d'un profil Steam en SteamID64 (identifiant à 17 chiffres). Idéal pour préparer des autorisations ou des bans.
-* *Exemple :* `!steamid https://steamcommunity.com/id/GabeN/`
-
-
+    * *Exemple :* `!steamid https://steamcommunity.com/id/GabeN/`
 * **`!grade <SteamID64> <NomDuGrade>`** : *(Spécifique aux serveurs Ark: Survival Evolved & Ascended)*. Attribue rapidement un groupe de permission à un joueur directement depuis Discord, sans avoir besoin de se connecter au jeu.
-* *Exemple :* `!grade 76561198000000000 VIP`
-
-
+    * *Exemple :* `!grade 76561198000000000 VIP`
 
 **🛠️ Commandes du Jeu (RCON Direct)** :
 Le bot agit comme une console à distance. Pour **toutes les autres commandes qui existent déjà sur votre jeu**, il suffit de les taper dans le salon Discord en ajoutant simplement un `!` devant.
