@@ -41,7 +41,9 @@
                         <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="status-dot <%= state.isOnline ? 'dot-online' : 'dot-offline' %>"></span>
-                                <span class="fw-bold"><%= server.nom %></span>
+                                <a href="#" class="fw-bold text-decoration-none text-white" data-bs-toggle="modal" data-bs-target="#infoModal-<%= server.id %>">
+                                    <%= server.nom %> <i class="fas fa-external-link-alt ms-1 small text-muted"></i>
+                                </a>
                             </div>
                             <span class="badge badge-game"><%= server.gameType %></span>
                         </div>
@@ -172,6 +174,97 @@
         </div>
     </div>
 
+    <% servers.forEach(function(server) { 
+        const state = (serverStates && serverStates[server.id]) ? serverStates[server.id] : null;
+    %>
+    <div class="modal fade" id="infoModal-<%= server.id %>" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background-color: #1e2126; color: white;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">📌 Détails : <%= server.nom %></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <% if (state && state.extra && Object.keys(state.extra).length > 0) { %>
+                        
+                        <% if (state.extra.bmLink) { %>
+                            <ul class="list-group list-group-flush bg-transparent mb-3">
+                                <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
+                                    <span class="text-muted">Official Server</span> <strong><%= state.extra.official %></strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
+                                    <span class="text-muted">PVE</span> <strong><%= state.extra.pve %></strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
+                                    <span class="text-muted">Crossplay</span> <strong><%= state.extra.crossplay %></strong>
+                                </li>
+                                <li class="list-group-item bg-transparent text-white d-flex justify-content-between text-end">
+                                    <span class="text-muted me-3">Platforms</span> <strong style="font-size: 0.85em;"><%= state.extra.platforms %></strong>
+                                </li>
+                            </ul>
+
+                            <% if (state.extra.mods && state.extra.mods.length > 0) { %>
+                                <h6 class="text-info mt-3 mb-3"><i class="fas fa-puzzle-piece"></i> Mods Actifs (<%= state.extra.mods.length %>)</h6>
+                            <% } %>
+                            
+                            <h6 class="text-success mt-3"><i class="fas fa-users"></i> Joueurs en ligne (<%= state.players %>)</h6>
+                            <div class="bg-dark p-2 rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.9em;">
+                                <% if (state.extra.playerNames && state.extra.playerNames.length > 0) { %>
+                                    <ul class="mb-0 ps-3 text-light">
+                                        <% state.extra.playerNames.forEach(player => { %>
+                                            <li><%= player %></li>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    <em class="text-muted">Aucun joueur connecté ou données masquées.</em>
+                                <% } %>
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                <a href="<%= state.extra.bmLink %>" target="_blank" class="btn btn-outline-info w-100">
+                                    <i class="fas fa-chart-line"></i> Voir les graphiques sur Battlemetrics
+                                </a>
+                            </div>
+
+                        <% } else { %>
+                            <h6 class="text-success mt-3"><i class="fas fa-users"></i> Joueurs en ligne (<%= state.players %>)</h6>
+                            <div class="bg-dark p-2 rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.9em;">
+                                <% if (state.extra.playerNames && state.extra.playerNames.length > 0) { %>
+                                    <ul class="mb-0 ps-3 text-light">
+                                        <% state.extra.playerNames.forEach(player => { %>
+                                            <li><%= player %></li>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    <em class="text-muted">Aucun joueur connecté ou données masquées.</em>
+                                <% } %>
+                            </div>
+                        <% } %>
+
+                    <% } else if (state && state.extra && Object.keys(state.extra).length === 0) { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3em;"></i>
+                            <h5>Serveur Inaccessible</h5>
+                            <p class="text-muted small mb-0">
+                                Le bot n'a pas pu récupérer les informations ou le serveur n'est pas sur Battlemetrics.<br>
+                                Vérifiez l'IP et le Port dans la configuration du serveur.
+                            </p>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary mb-3" role="status"></div>
+                            <h6 class="text-muted">En attente du scan du serveur...</h6>
+                            <p class="small text-muted mb-0">Le bot interroge actuellement le serveur.</p>
+                        </div>
+                    <% } %>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
@@ -193,6 +286,13 @@
                 document.getElementById('edit_logChannelId').value = data.logChannelId || '';
             });
         });
+
+        // Auto-actualisation intelligente du Dashboard
+        setInterval(() => {
+            if (!document.body.classList.contains('modal-open')) {
+                window.location.reload();
+            }
+        }, 30000);
     </script>
 </body>
 </html>
