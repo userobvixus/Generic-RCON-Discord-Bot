@@ -1,5 +1,5 @@
 /**
- * 🤖 BOT RCON ULTIMATE V11 (SECURITY IP LOCK)
+ * 🤖 BOT RCON ULTIMATE V12 (SECURITY IP LOCK + AUTO BATTLEMETRICS PERFECTED)
  */
 
 const fs = require('fs');
@@ -11,7 +11,6 @@ const bodyParser = require('body-parser');
 
 // --- CONFIGURATION ---
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN; 
-// 👇 LE MOT DE PASSE (Défini dans Pterodactyl, ou "admin123" par défaut si oublié)
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || "admin123"; 
 const DB_FILE = './database.json';
 
@@ -19,14 +18,13 @@ let serverStates = {};
 
 if (!DISCORD_TOKEN) { console.error("❌ TOKEN MANQUANT"); process.exit(1); }
 
-// Initialisation DB avec liste des IPs autorisées (authIps)
 if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify({ servers: [], authIps: [] }, null, 2));
 }
 
 function getDb() { 
     const db = JSON.parse(fs.readFileSync(DB_FILE));
-    if (!db.authIps) db.authIps = []; // Sécurité pour les vieilles DB
+    if (!db.authIps) db.authIps = []; 
     return db;
 }
 function saveDb(data) { fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2)); }
@@ -35,37 +33,23 @@ function saveDb(data) { fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2))
 const app = express();
 const PORT = process.env.SERVER_PORT || 3000; 
 
-// IMPORTANT POUR PTERODACTYL (Permet de voir la vraie IP derrière le proxy)
 app.set('trust proxy', 1);
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
-// --- MIDDLEWARE DE SÉCURITÉ ---
-// Cette fonction vérifie l'IP avant chaque page
 function checkAuth(req, res, next) {
-    const userIp = req.ip; // Récupère l'IP du visiteur
+    const userIp = req.ip; 
     const db = getDb();
-
-    // Si l'IP est connue, on laisse passer
-    if (db.authIps.includes(userIp)) {
-        return next();
-    }
-
-    // Sinon, on redirige vers le login
+    if (db.authIps.includes(userIp)) return next();
     res.render('login', { error: null });
 }
 
-// Route Login (POST) : Vérification du mot de passe
 app.post('/login', (req, res) => {
     const password = req.body.password;
-    
     if (password === AUTH_PASSWORD) {
-        // Mot de passe correct : On sauvegarde l'IP
         const db = getDb();
         const userIp = req.ip;
-        
         if (!db.authIps.includes(userIp)) {
             db.authIps.push(userIp);
             saveDb(db);
@@ -73,19 +57,13 @@ app.post('/login', (req, res) => {
         }
         res.redirect('/');
     } else {
-        // Mauvais mot de passe
         console.log(`[SÉCURITÉ] Tentative échouée depuis : ${req.ip}`);
         res.render('login', { error: "❌ Mot de passe incorrect" });
     }
 });
 
-// --- ROUTES PROTÉGÉES (On ajoute checkAuth partout) ---
-
 app.get('/', checkAuth, (req, res) => {
-    res.render('dashboard', { 
-        servers: getDb().servers,
-        serverStates: serverStates
-    });
+    res.render('dashboard', { servers: getDb().servers, serverStates: serverStates });
 });
 
 app.post('/add-server', checkAuth, (req, res) => {
@@ -140,7 +118,7 @@ app.post('/delete-server', checkAuth, (req, res) => {
 
 app.listen(PORT, () => console.log(`🌍 WEB: Port ${PORT}`));
 
-// --- BOT DISCORD (Inchangé) ---
+// --- BOT DISCORD ---
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
@@ -160,7 +138,6 @@ client.on('messageCreate', async (message) => {
     const targetServer = db.servers.find(s => s.discordChannelId === message.channel.id);
     
     if (targetServer) {
-        // Vérification des permissions avec le rôle défini depuis le Dashboard
         if (targetServer.adminRoleId && !message.member.roles.cache.has(targetServer.adminRoleId)) {
             return message.reply("⛔ Permission refusée.");
         }
@@ -169,51 +146,26 @@ client.on('messageCreate', async (message) => {
         const args = command.split(/ +/);
         const action = args[0].toLowerCase();
         
-        // --- NOUVEAUTÉ : Système de Grade ---
         if (action === 'grade') {
-            if (args.length < 3) {
-                return message.reply("❌ Usage incorrect. Exemple : `!grade 76561198000000000 VIP`");
-            }
+            if (args.length < 3) return message.reply("❌ Usage incorrect. Exemple : `!grade 76561198000000000 VIP`");
             const steamId = args[1];
             const gradeName = args[2];
-
-            // Sécurité : on s'assure d'envoyer la syntaxe Ark uniquement aux serveurs Ark/ASA
-            if (['arkse', 'asa'].includes(targetServer.gameType)) {
-                // Syntaxe Vexel/Ark standard
-                command = `cheat setplayergroup ${steamId} ${gradeName}`;
-            } else {
-                return message.reply("❌ La commande de grade rapide est configurée uniquement pour les serveurs Ark.");
-            }
+            if (['arkse', 'asa'].includes(targetServer.gameType)) command = `cheat setplayergroup ${steamId} ${gradeName}`;
+            else return message.reply("❌ La commande de grade rapide est configurée uniquement pour les serveurs Ark.");
         }
-        // --- FIN DU SYSTÈME DE GRADE ---
-        // --- NOUVEAUTÉ : Récupération du SteamID64 ---
         else if (action === 'steamid') {
-            if (args.length < 2) {
-                return message.reply("❌ Usage : `!steamid <LienProfilSteam>`\nExemple : `!steamid https://steamcommunity.com/id/GabeN/`");
-            }
-
+            if (args.length < 2) return message.reply("❌ Usage : `!steamid <LienProfilSteam>`\nExemple : `!steamid https://steamcommunity.com/id/GabeN/`");
             const profileUrl = args[1];
-
-            // Cas 1 : L'URL contient déjà le SteamID64 (lien /profiles/)
             const profileMatch = profileUrl.match(/\/profiles\/([0-9]{17})/);
-            if (profileMatch) {
-                return message.reply(`✅ Le SteamID64 est : **${profileMatch[1]}**`);
-            }
+            if (profileMatch) return message.reply(`✅ Le SteamID64 est : **${profileMatch[1]}**`);
 
-            // Cas 2 : L'URL est un lien personnalisé (lien /id/)
             try {
                 await message.react('⏳');
-                
-                // Nettoyage de l'URL et ajout du paramètre XML
                 const cleanUrl = profileUrl.endsWith('/') ? profileUrl : profileUrl + '/';
                 const response = await fetch(`${cleanUrl}?xml=1`);
                 const text = await response.text();
-                
-                // Recherche de la balise <steamID64> dans le code de la page
                 const idMatch = text.match(/<steamID64>([0-9]{17})<\/steamID64>/);
-                
                 try { await message.reactions.removeAll(); } catch(e){}
-
                 if (idMatch) {
                     await message.react('✅');
                     message.reply(`✅ Le SteamID64 est : **${idMatch[1]}**`);
@@ -226,12 +178,8 @@ client.on('messageCreate', async (message) => {
                 try { await message.reactions.removeAll(); await message.react('❌'); } catch(e){}
                 message.reply("❌ Erreur de communication avec les serveurs de Steam.");
             }
-            
-            // On s'arrête ici pour ne pas envoyer cette commande au serveur de jeu via RCON
             return;
         }
-        // --- FIN DE LA RÉCUPÉRATION STEAMID ---
-        // Alias existants
         else if (action === 'save') {
             const type = targetServer.gameType;
             if (['arkse', 'asa', 'rust', 'palworld', 'conan'].includes(type)) command = 'saveworld';
@@ -239,7 +187,6 @@ client.on('messageCreate', async (message) => {
             if (['factorio'].includes(type)) command = '/save';
         }
 
-        // Exécution de la commande finale formatée
         executeRcon(targetServer, command, message);
     }
 });
@@ -251,7 +198,7 @@ async function executeRcon(server, command, message) {
         await rcon.connect();
         
         const sendPromise = rcon.send(command);
-        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve("✅ Commande envoyée"), 4000));
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve("✅ Commande envoyée silencieusement"), 4000));
         const response = await Promise.race([sendPromise, timeoutPromise]);
         
         logAction(server, message.author, command, response);
@@ -291,54 +238,137 @@ async function updateAllServersStatus() {
     let dbChanged = false;
 
     for (const server of db.servers) {
-        
-        let currentState = { isOnline: false, players: "0/0", map: "---" };
+        let currentState = { isOnline: false, players: "0/0", map: "---", extra: null };
         let finalPort = server.queryPort;
 
         try {
-            let gamedigType = 'valve'; 
-            let portsToScan = [server.queryPort];
-
-            switch (server.gameType) {
-                case 'asa': gamedigType = 'asa'; portsToScan = [server.queryPort, server.queryPort+1, server.queryPort+2, server.queryPort+3, server.queryPort+15]; break;
-                case 'arkse': gamedigType = 'arkse'; portsToScan = [server.queryPort, server.queryPort+1, server.queryPort+15]; break;
-                case 'rust': gamedigType = 'rust'; portsToScan = [server.queryPort, server.queryPort+1]; break;
-                case 'minecraft': gamedigType = 'minecraft'; break; 
-                case 'palworld': gamedigType = 'palworld'; break;
-                case 'pz': gamedigType = 'projectzomboid'; break;
-                case 'vrising': gamedigType = 'vrising'; break;
-                case 'conan': gamedigType = 'conanexiles'; portsToScan = [server.queryPort, server.queryPort+1]; break;
-                case 'factorio': gamedigType = 'factorio'; break;
-                case '7d2d': gamedigType = '7d2d'; break;
-                case 'avorion': gamedigType = 'avorion'; break;
-                case 'cs2': gamedigType = 'csgo'; break;
-                case 'gmod': gamedigType = 'garrysmod'; break;
-                case 'tf2': gamedigType = 'tf2'; break;
-                case 'l4d2': gamedigType = 'l4d2'; break;
-                default: gamedigType = 'valve'; portsToScan = [server.queryPort, server.queryPort+1]; break;
-            }
-
-            for (const port of portsToScan) {
-                if (currentState.isOnline) break;
+            // --- AUTOMATISATION BATTLEMETRICS (Pour ASA) ---
+            if (['asa'].includes(server.gameType)) {
                 try {
-                    const state = await GameDig.query({ type: gamedigType, host: server.ip, port: port, socketTimeout: 2000, maxRetries: 0 });
-                    currentState.isOnline = true;
-                    currentState.players = `${state.players.length}/${state.maxplayers}`;
-                    currentState.map = state.map || "Map Inconnue";
-                    finalPort = port;
-                } catch (e) {}
+                    const bmSearchUrl = `https://api.battlemetrics.com/servers?filter[game]=arksa&filter[search]=${server.ip}`;
+                    const searchRes = await fetch(bmSearchUrl, { headers: { 'Accept': 'application/json', 'User-Agent': 'CroustyBot/1.5' } });
+                    
+                    if (!searchRes.ok) throw new Error(`HTTP ${searchRes.status}`);
+                    
+                    const bmData = await searchRes.json();
+                    
+                    if (bmData.data && bmData.data.length > 0) {
+                        let serverData = bmData.data.find(s => s.attributes.ip === server.ip && s.attributes.port === server.queryPort);
+                        if (!serverData) serverData = bmData.data.find(s => s.attributes.ip === server.ip);
+
+                        if (serverData) {
+                            const bmId = serverData.id;
+
+                            const detailRes = await fetch(`https://api.battlemetrics.com/servers/${bmId}?include=player`, { 
+                                headers: { 'Accept': 'application/json', 'User-Agent': 'CroustyBot/1.5' } 
+                            });
+                            
+                            if (detailRes.ok) {
+                                const detailData = await detailRes.json();
+                                const detailAttrs = detailData.data.attributes;
+                                const fullDetails = detailAttrs.details || {};
+
+                                currentState.isOnline = detailAttrs.status === 'online';
+                                currentState.players = `${detailAttrs.players}/${detailAttrs.maxPlayers}`;
+                                currentState.map = fullDetails.map || "Inconnue";
+                                finalPort = detailAttrs.port;
+
+                                let onlinePlayers = [];
+                                if (detailData.included) {
+                                    onlinePlayers = detailData.included
+                                        .filter(inc => inc.type === 'player')
+                                        .map(p => p.attributes.name);
+                                }
+
+                                // Extraction robuste des Plateformes
+                                let platformsStr = 'PC (Steam)';
+                                if (fullDetails.allowedPlatforms && Array.isArray(fullDetails.allowedPlatforms) && fullDetails.allowedPlatforms.length > 0) {
+                                    platformsStr = fullDetails.allowedPlatforms.join(', ');
+                                } else if (fullDetails.crossplay === true || String(fullDetails.crossplay).toLowerCase() === 'true') {
+                                    platformsStr = 'PC (Steam), Xbox, PC (Windows Store), Playstation';
+                                } else if (fullDetails.serverPlatforms && Array.isArray(fullDetails.serverPlatforms)) {
+                                    platformsStr = fullDetails.serverPlatforms.join(', ');
+                                }
+
+                                // Extraction de la liste des Mods
+                                let modsArray = [];
+                                if (fullDetails.mods && Array.isArray(fullDetails.mods)) modsArray = fullDetails.mods;
+                                else if (fullDetails.modIds && Array.isArray(fullDetails.modIds)) modsArray = fullDetails.modIds;
+
+                                currentState.extra = {
+                                    official: fullDetails.official ? 'True, Official' : 'False, Unofficial',
+                                    pve: fullDetails.pve ? 'True' : 'False',
+                                    crossplay: fullDetails.crossplay ? 'True' : 'False',
+                                    platforms: platformsStr,
+                                    mods: modsArray,
+                                    playerNames: onlinePlayers,
+                                    bmLink: `https://www.battlemetrics.com/servers/arksa/${bmId}`
+                                };
+                            } else {
+                                throw new Error("Impossible de charger les détails BM.");
+                            }
+                        } else {
+                            currentState.map = "Port introuvable sur BM";
+                            currentState.extra = {}; 
+                        }
+                    } else {
+                        currentState.map = "IP introuvable sur BM";
+                        currentState.extra = {}; 
+                    }
+                } catch (e) {
+                    console.error(`Erreur API BM pour ${server.nom}:`, e.message);
+                    currentState.map = "Erreur API";
+                    currentState.extra = {}; 
+                }
+            } 
+            // --- SYSTÈME CLASSIQUE GAMEDIG ---
+            else {
+                let gamedigType = 'valve'; 
+                let portsToScan = [server.queryPort];
+
+                switch (server.gameType) {
+                    case 'arkse': gamedigType = 'arkse'; portsToScan = [server.queryPort, server.queryPort+1, server.queryPort+15]; break;
+                    case 'rust': gamedigType = 'rust'; portsToScan = [server.queryPort, server.queryPort+1]; break;
+                    case 'minecraft': gamedigType = 'minecraft'; break; 
+                    case 'palworld': gamedigType = 'palworld'; break;
+                    default: gamedigType = 'valve'; portsToScan = [server.queryPort, server.queryPort+1]; break;
+                }
+
+                let success = false;
+                for (const port of portsToScan) {
+                    if (success) break;
+                    try {
+                        const state = await GameDig.query({ type: gamedigType, host: server.ip, port: port, socketTimeout: 2000, maxRetries: 0 });
+                        currentState.isOnline = true;
+                        currentState.players = `${state.players.length}/${state.maxplayers}`;
+                        currentState.map = state.map || "Map Inconnue";
+                        finalPort = port;
+                        
+                        currentState.extra = {
+                            playerNames: state.players.map(p => p.name || 'Inconnu').filter(n => n)
+                        };
+                        success = true;
+                    } catch (e) {}
+                }
+                
+                if (!success) {
+                    currentState.extra = {}; 
+                }
             }
 
             serverStates[server.id] = currentState;
 
+            // --- MISE À JOUR DU MESSAGE DISCORD ---
             if (server.statusChannelId) {
-                const channel = await client.channels.fetch(server.statusChannelId);
+                const channel = await client.channels.fetch(server.statusChannelId).catch(()=>null);
                 if (channel) {
                     const color = currentState.isOnline ? 0x2ecc71 : 0xe74c3c;
                     const statusText = currentState.isOnline ? '🟢 **EN LIGNE**' : '🔴 **HORS LIGNE**';
                     
                     let footerInfo = `Actualisé à ${new Date().toLocaleTimeString('fr-FR')}`;
-                    if(currentState.isOnline && finalPort !== server.queryPort) footerInfo += ` • Port détecté : ${finalPort}`;
+                    if(currentState.isOnline && finalPort !== server.queryPort && !['asa'].includes(server.gameType)) {
+                        footerInfo += ` • Port détecté : ${finalPort}`;
+                    }
 
                     const embed = new EmbedBuilder()
                         .setTitle(`📊 État du serveur : ${server.nom}`)
@@ -346,10 +376,15 @@ async function updateAllServersStatus() {
                         .addFields(
                             { name: 'Statut', value: statusText, inline: true },
                             { name: 'Joueurs', value: `👥 \`${currentState.players}\``, inline: true },
-                            { name: 'Carte', value: `🗺️ ${currentState.map}`, inline: true },
-                            { name: 'Connexion', value: `\`connect ${server.ip}:${finalPort}\``, inline: false }
+                            { name: 'Carte', value: `🗺️ ${currentState.map}`, inline: true }
                         )
                         .setFooter({ text: footerInfo });
+                    
+                    if (currentState.extra && currentState.extra.bmLink) {
+                         embed.setURL(currentState.extra.bmLink);
+                    } else if (currentState.isOnline && !['asa'].includes(server.gameType)) {
+                         embed.addFields({ name: 'Connexion', value: `\`connect ${server.ip}:${finalPort}\``, inline: false });
+                    }
 
                     if (server.statusMessageId) {
                         try {
