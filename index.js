@@ -66,7 +66,8 @@ app.get('/', checkAuth, (req, res) => {
     res.render('dashboard', { servers: getDb().servers, serverStates: serverStates });
 });
 
-app.post('/add-server', checkAuth, (req, res) => {
+// PASSAGE EN ASYNC POUR FORCER LE SCAN IMMÉDIAT
+app.post('/add-server', checkAuth, async (req, res) => {
     const db = getDb();
     const newServer = {
         id: Date.now().toString(),
@@ -84,10 +85,14 @@ app.post('/add-server', checkAuth, (req, res) => {
     };
     db.servers.push(newServer);
     saveDb(db);
+    
+    // Force le bot à scanner tout de suite avant de recharger la page !
+    await updateAllServersStatus(); 
     res.redirect('/');
 });
 
-app.post('/edit-server', checkAuth, (req, res) => {
+// PASSAGE EN ASYNC POUR FORCER LE SCAN IMMÉDIAT
+app.post('/edit-server', checkAuth, async (req, res) => {
     const db = getDb();
     const index = db.servers.findIndex(s => s.id === req.body.id);
     if (index !== -1) {
@@ -105,6 +110,9 @@ app.post('/edit-server', checkAuth, (req, res) => {
             statusChannelId: req.body.statusChannelId ? req.body.statusChannelId.trim() : ""
         };
         saveDb(db);
+        
+        // Force le bot à scanner tout de suite avant de recharger la page !
+        await updateAllServersStatus();
     }
     res.redirect('/');
 });
@@ -112,6 +120,7 @@ app.post('/edit-server', checkAuth, (req, res) => {
 app.post('/delete-server', checkAuth, (req, res) => {
     const db = getDb();
     db.servers = db.servers.filter(s => s.id !== req.body.id);
+    delete serverStates[req.body.id]; // Nettoyage de la mémoire
     saveDb(db);
     res.redirect('/');
 });
