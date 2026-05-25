@@ -17,6 +17,7 @@
         .dot-online { background-color: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
         .dot-offline { background-color: #e74c3c; }
         .stat-box { background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px; font-size: 0.95em; }
+        .rcon-console { height: 140px; overflow-y: auto; font-family: monospace; font-size: 0.85em; color: #2ecc71; background-color: #0b0c10; padding: 10px; border-radius: 5px; margin-bottom: 10px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
@@ -66,7 +67,7 @@
                             <div class="small text-muted mb-3">
                                 <div class="d-flex justify-content-between"><span>IP:</span> <span class="font-monospace text-white"><%= server.ip %></span></div>
                                 <div class="d-flex justify-content-between"><span>Query:</span> <span class="font-monospace text-white"><%= server.queryPort %></span></div>
-                                <div class="d-flex justify-content-between"><span>Salon:</span> <span class="font-monospace text-white"><%= server.discordChannelId %></span></div>
+                                <div class="d-flex justify-content-between"><span>Salon:</span> <span class="font-monospace text-white"><%= server.discordChannelId || 'Aucun' %></span></div>
                             </div>
 
                             <div class="d-flex gap-2">
@@ -119,7 +120,6 @@
                 <div class="modal-body">
                     <form action="/edit-server" method="POST" id="editForm">
                         <input type="hidden" name="id" id="edit_id">
-                        
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label>Nom</label>
@@ -149,9 +149,6 @@
                                         <option value="tf2">Team Fortress 2</option>
                                         <option value="l4d2">Left 4 Dead 2</option>
                                     </optgroup>
-                                    <optgroup label="Autre">
-                                        <option value="other">Autre (Generic Valve)</option>
-                                    </optgroup>
                                 </select>
                             </div>
                             <div class="col-md-4"><label>IP</label><input type="text" name="ip" id="edit_ip" class="form-control font-monospace" required></div>
@@ -159,12 +156,12 @@
                             <div class="col-md-4"><label>Port Query</label><input type="number" name="queryPort" id="edit_queryPort" class="form-control font-monospace" required></div>
                             <div class="col-md-12"><label>Mot de passe RCON</label><input type="text" name="password" id="edit_password" class="form-control"></div>
                             
-                            <div class="col-md-4"><label>Salon Commandes</label><input type="text" name="discordChannelId" id="edit_discordChannelId" class="form-control" required></div>
+                            <div class="col-md-4"><label>Salon Commandes <small class="text-muted">(Optionnel)</small></label><input type="text" name="discordChannelId" id="edit_discordChannelId" class="form-control"></div>
+                            
                             <div class="col-md-4"><label>Rôle Admin</label><input type="text" name="adminRoleId" id="edit_adminRoleId" class="form-control"></div>
                             <div class="col-md-4"><label>Salon Status</label><input type="text" name="statusChannelId" id="edit_statusChannelId" class="form-control"></div>
                             <input type="hidden" name="logChannelId" id="edit_logChannelId">
                         </div>
-
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-warning">Sauvegarder</button>
                         </div>
@@ -180,14 +177,20 @@
     <div class="modal fade" id="infoModal-<%= server.id %>" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content" style="background-color: #1e2126; color: white;">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title">📌 Détails : <%= server.nom %></h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                
+                <div class="modal-header border-secondary align-items-center">
+                    <h5 class="modal-title mb-0">📌 Détails : <%= server.nom %></h5>
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <form action="/refresh-server" method="POST" class="m-0">
+                            <input type="hidden" name="id" value="<%= server.id %>">
+                            <button type="submit" class="btn btn-outline-info btn-sm" title="Actualiser le statut"><i class="fas fa-sync-alt"></i></button>
+                        </form>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
                 </div>
+
                 <div class="modal-body">
-                    
                     <% if (state && state.extra && Object.keys(state.extra).length > 0) { %>
-                        
                         <% if (state.extra.bmLink) { %>
                             <ul class="list-group list-group-flush bg-transparent mb-3">
                                 <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
@@ -209,7 +212,7 @@
                             <% } %>
                             
                             <h6 class="text-success mt-3"><i class="fas fa-users"></i> Joueurs en ligne (<%= state.players %>)</h6>
-                            <div class="bg-dark p-2 rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.9em;">
+                            <div class="bg-dark p-2 rounded" style="max-height: 120px; overflow-y: auto; font-size: 0.9em;">
                                 <% if (state.extra.playerNames && state.extra.playerNames.length > 0) { %>
                                     <ul class="mb-0 ps-3 text-light">
                                         <% state.extra.playerNames.forEach(player => { %>
@@ -221,15 +224,9 @@
                                 <% } %>
                             </div>
 
-                            <div class="mt-4 text-center">
-                                <a href="<%= state.extra.bmLink %>" target="_blank" class="btn btn-outline-info w-100">
-                                    <i class="fas fa-chart-line"></i> Voir les graphiques sur Battlemetrics
-                                </a>
-                            </div>
-
                         <% } else { %>
                             <h6 class="text-success mt-3"><i class="fas fa-users"></i> Joueurs en ligne (<%= state.players %>)</h6>
-                            <div class="bg-dark p-2 rounded" style="max-height: 150px; overflow-y: auto; font-size: 0.9em;">
+                            <div class="bg-dark p-2 rounded" style="max-height: 120px; overflow-y: auto; font-size: 0.9em;">
                                 <% if (state.extra.playerNames && state.extra.playerNames.length > 0) { %>
                                     <ul class="mb-0 ps-3 text-light">
                                         <% state.extra.playerNames.forEach(player => { %>
@@ -242,20 +239,32 @@
                             </div>
                         <% } %>
 
+                        <hr class="border-secondary mt-4 mb-3">
+                        <h6 class="text-warning"><i class="fas fa-terminal"></i> Console Web RCON</h6>
+                        <div class="rcon-console border-secondary" id="rcon-output-<%= server.id %>">Console prête. En attente de commandes...</div>
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="text" id="rcon-input-<%= server.id %>" class="form-control bg-dark text-white border-secondary" placeholder="Ex: saveworld, broadcast Hello">
+                            <button class="btn btn-outline-warning" id="rcon-btn-<%= server.id %>" onclick="sendRcon('<%= server.id %>')">Envoyer</button>
+                        </div>
+                        
+                        <% if (state.extra.bmLink) { %>
+                            <div class="mt-4 text-center">
+                                <a href="<%= state.extra.bmLink %>" target="_blank" class="btn btn-outline-info w-100">
+                                    <i class="fas fa-chart-line"></i> Graphiques sur Battlemetrics
+                                </a>
+                            </div>
+                        <% } %>
+
                     <% } else if (state && state.extra && Object.keys(state.extra).length === 0) { %>
                         <div class="text-center py-4">
                             <i class="fas fa-exclamation-triangle text-danger mb-3" style="font-size: 3em;"></i>
                             <h5>Serveur Inaccessible</h5>
-                            <p class="text-muted small mb-0">
-                                Le bot n'a pas pu récupérer les informations ou le serveur n'est pas sur Battlemetrics.<br>
-                                Vérifiez l'IP et le Port dans la configuration du serveur.
-                            </p>
+                            <p class="text-muted small mb-0">Vérifiez l'IP et le Port dans la configuration.</p>
                         </div>
                     <% } else { %>
                         <div class="text-center py-5">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
                             <h6 class="text-muted">En attente du scan du serveur...</h6>
-                            <p class="small text-muted mb-0">Le bot interroge actuellement le serveur.</p>
                         </div>
                     <% } %>
 
@@ -267,8 +276,60 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        // Logique de la Web Console RCON
+        async function sendRcon(serverId) {
+            const input = document.getElementById('rcon-input-' + serverId);
+            const output = document.getElementById('rcon-output-' + serverId);
+            const btn = document.getElementById('rcon-btn-' + serverId);
+            const command = input.value.trim();
+            
+            if (!command) return;
+
+            output.innerHTML += `\n<span class="text-white">> ${command}</span>`;
+            
+            const loadingId = 'loading-' + Date.now();
+            output.innerHTML += `\n<span id="${loadingId}" class="text-muted">⏳ En attente de la réponse du serveur...</span>`;
+            
+            input.value = '';
+            input.disabled = true;
+            btn.disabled = true;
+            output.scrollTop = output.scrollHeight;
+
+            try {
+                const res = await fetch('/api/rcon', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ serverId, command })
+                });
+                const data = await res.json();
+                
+                document.getElementById(loadingId).remove();
+                
+                if (data.success) {
+                    const responseText = data.response ? data.response : "✔️ Commande envoyée (Aucune réponse de la console Ark).";
+                    output.innerHTML += `\n<span class="text-success">${responseText}</span>`;
+                } else {
+                    output.innerHTML += `\n<span class="text-danger">[ERREUR RCON] ${data.error}</span>`;
+                }
+            } catch (e) {
+                document.getElementById(loadingId).remove();
+                output.innerHTML += `\n<span class="text-danger">[ERREUR RÉSEAU] Impossible de contacter le serveur RCON (Vérifiez qu'il est allumé).</span>`;
+            }
+
+            input.disabled = false;
+            btn.disabled = false;
+            input.focus();
+            output.scrollTop = output.scrollHeight;
+        }
+
+        document.querySelectorAll('input[id^="rcon-input-"]').forEach(input => {
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    const serverId = this.id.replace('rcon-input-', '');
+                    sendRcon(serverId);
+                }
+            });
+        });
 
         document.querySelectorAll('.btn-edit').forEach(button => {
             button.addEventListener('click', function() {
@@ -280,14 +341,13 @@
                 document.getElementById('edit_port').value = data.port;
                 document.getElementById('edit_queryPort').value = data.queryPort;
                 document.getElementById('edit_password').value = data.password;
-                document.getElementById('edit_discordChannelId').value = data.discordChannelId;
+                document.getElementById('edit_discordChannelId').value = data.discordChannelId || '';
                 document.getElementById('edit_adminRoleId').value = data.adminRoleId || '';
                 document.getElementById('edit_statusChannelId').value = data.statusChannelId || '';
                 document.getElementById('edit_logChannelId').value = data.logChannelId || '';
             });
         });
 
-        // Auto-actualisation intelligente du Dashboard
         setInterval(() => {
             if (!document.body.classList.contains('modal-open')) {
                 window.location.reload();
